@@ -1,7 +1,7 @@
-const userRouter = require("./userRoute");
-const orderRouter = require("./orderRoute");
-const productRouter = require("./productRoute");
-const authRouter = require("./authRoute");
+const userRouter = require("./user.route");
+const orderRouter = require("./order.route");
+const productRouter = require("./product.route");
+const authRouter = require("./auth.route");
 
 function route(app) {
   app.use("/auth", authRouter);
