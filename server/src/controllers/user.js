@@ -78,4 +78,76 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
-module.exports = { getUser, getUserProfile, updateUserProfile };
+//* desc   Get user by id
+//* route  GET /user/:id
+//* access Private/Admin
+const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+//* desc   Update user
+//* route  PUT /user/:id
+//* access Private/Admin
+const updateUser = async (req, res) => {
+  const { isAdmin } = req.body;
+  try {
+    let updatedUser = { isAdmin };
+    const updateCondition = { _id: req.params.id };
+    updatedUser = await User.findOneAndUpdate(updateCondition, updatedUser, {
+      new: true,
+    });
+    return res.status(200).json({
+      success: true,
+      message: 'Update admin successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+//* desc   Delete user
+//* route  DELETE /user/:id
+//* access Private/Admin
+const deleteUser = async (req, res) => {
+  try {
+    const deleteCondition = {_id: req.params.id}
+    const user = await User.findOneAndDelete(deleteCondition)
+    return res.status(200).json({
+      success: true,
+      message: 'Delete user successfully',
+      user
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+};
+
+module.exports = {
+  getUser,
+  getUserProfile,
+  updateUserProfile,
+  getUserById,
+  updateUser,
+  deleteUser,
+};
