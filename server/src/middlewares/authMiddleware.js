@@ -10,7 +10,7 @@ const protectedRoute = async (req, res, next) => {
   ) {
     token = req.headers.authorization.split(" ")[1];
     if (!token) {
-      return res.status(401).json({
+      return res.status(400).json({
         success: false,
         message: "Access token not found",
       });
@@ -34,7 +34,7 @@ const isAdmin = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
     next();
   } else {
-    return res.status(401).json({
+    return res.status(400).json({
       success: false,
       message: "Admin resource, not authorized",
     });

@@ -27,6 +27,12 @@ const getAllProducts = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(400).json({
+        success: false,
+        message: "Product is not found",
+      });
+    }
     return res.status(200).json({
       success: true,
       product,
@@ -145,10 +151,17 @@ const updateProduct = async (req, res) => {
       { new: true }
     );
 
+    if(!updatedProduct) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product is not found',
+      });
+    }
+
     return res.status(200).json({
       success: true,
-      message: 'Update product successfully',
-      product: updatedProduct
+      message: "Update product successfully",
+      product: updatedProduct,
     });
   } catch (error) {
     console.log(error);
@@ -162,7 +175,31 @@ const updateProduct = async (req, res) => {
 //* desc   Delete product
 //* route  DELETE /product/:id
 //* access Private/Admin
-const deleteProduct = async (req, res) => {};
+const deleteProduct = async (req, res) => {
+  try {
+    const deleteCondition = { _id: req.params.id, user: req.user._id}
+    const product = await Product.findOneAndDelete(deleteCondition)
+    
+    if(!product) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product is not found',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Delete product successfully',
+      product
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+};
 
 //* desc   Get all reviews
 //* route  GET /:id/review

@@ -84,6 +84,12 @@ const updateUserProfile = async (req, res) => {
 const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not found",
+      });
+    }
     return res.status(200).json({
       success: true,
       user,
@@ -108,10 +114,16 @@ const updateUser = async (req, res) => {
     updatedUser = await User.findOneAndUpdate(updateCondition, updatedUser, {
       new: true,
     });
+    if (!updatedUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not found",
+      });
+    }
     return res.status(200).json({
       success: true,
-      message: 'Update admin successfully',
-      user: updatedUser
+      message: "Update admin successfully",
+      user: updatedUser,
     });
   } catch (error) {
     console.log(error);
@@ -127,18 +139,24 @@ const updateUser = async (req, res) => {
 //* access Private/Admin
 const deleteUser = async (req, res) => {
   try {
-    const deleteCondition = {_id: req.params.id}
-    const user = await User.findOneAndDelete(deleteCondition)
+    const deleteCondition = { _id: req.params.id };
+    const user = await User.findOneAndDelete(deleteCondition);
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not found",
+      });
+    }
     return res.status(200).json({
       success: true,
-      message: 'Delete user successfully',
-      user
+      message: "Delete user successfully",
+      user,
     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error',
+      message: "Internal server error",
     });
   }
 };
