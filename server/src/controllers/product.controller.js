@@ -151,10 +151,10 @@ const updateProduct = async (req, res) => {
       { new: true }
     );
 
-    if(!updatedProduct) {
+    if (!updatedProduct) {
       return res.status(400).json({
         success: false,
-        message: 'Product is not found',
+        message: "Product is not found",
       });
     }
 
@@ -177,44 +177,151 @@ const updateProduct = async (req, res) => {
 //* access Private/Admin
 const deleteProduct = async (req, res) => {
   try {
-    const deleteCondition = { _id: req.params.id, user: req.user._id}
-    const product = await Product.findOneAndDelete(deleteCondition)
-    
-    if(!product) {
+    const deleteCondition = { _id: req.params.id, user: req.user._id };
+    const product = await Product.findOneAndDelete(deleteCondition);
+
+    if (!product) {
       return res.status(400).json({
         success: false,
-        message: 'Product is not found',
+        message: "Product is not found",
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: 'Delete product successfully',
-      product
+      message: "Delete product successfully",
+      product,
     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error',
+      message: "Internal server error",
     });
   }
 };
 
 //* desc   Get all reviews
-//* route  GET /:id/review
+//* route  GET /product/:id/review
 //* access Public
-const getAllReviews = async (req, res) => {};
+const getAllReviews = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(400).json({
+        success: false,
+        message: "Product is not found",
+      });
+    }
+
+    const reviews = product.reviews;
+
+    return res.status(200).json({
+      success: true,
+      reviews,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
 
 //* desc   Create review
-//* route  POST /:id/review
+//* route  POST /product/:id/review
 //* access Private
-const createReview = async (req, res) => {};
+const createReview = async (req, res) => {
+  const { rating, comment } = req.body;
+
+  if (!rating || !comment) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing infomation",
+    });
+  }
+
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(400).json({
+        success: false,
+        message: "Product is not found",
+      });
+    }
+
+    const review = product.reviews;
+
+    const alreadyReviewed = product.reviews.find(
+      (i) => i.user.toString() === req.user._id.toString()
+    );
+
+    if (alreadyReviewed) {
+      return res.status(400).json({
+        success: false,
+        message: "User have already reviewed this product",
+      });
+    }
+
+    const newReview = {
+      name: req.user.name,
+      rating: 0 || Number(rating),
+      comment,
+      user: req.user._id,
+    };
+
+    review.push(newReview);
+    product.reviewNumber = review.length;
+    product.rating =
+      review.reduce((acc, item) => item.rating + acc, 0) / review.length;
+
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Create review successfully",
+      product,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+//* desc   Update review
+//* route  /product/:id/review/:id
+//* access Private
+const updateReview = (req, res) => {}
+
+//* desc   Delete review 
+//* route  /product/:id/review/:id
+//* access Private
+const deleteReview = (req, res) => {}
 
 //* desc   Get top product
-//* route  GET /product/top
+//* route  GET /rating/top-product
 //* access Public
-const getTopProduct = async (req, res) => {};
+const getTopProduct = async (req, res) => {
+  try {
+    const products = await Product.find({}).sort({ rating: -1 }).limit(3);
+    return res.status(200).json({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
 
 module.exports = {
   getAllProducts,
@@ -224,5 +331,7 @@ module.exports = {
   deleteProduct,
   getAllReviews,
   createReview,
+  updateReview,
+  deleteReview,
   getTopProduct,
 };
